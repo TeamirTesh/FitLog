@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/start_workout_screen.dart';
 import 'screens/exercise_manager_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
 
-void main() {
-  runApp(const FitLogApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadThemePreference();
+  runApp(
+    ChangeNotifierProvider<ThemeProvider>.value(
+      value: themeProvider,
+      child: const FitLogApp(),
+    ),
+  );
 }
 
 class FitLogApp extends StatelessWidget {
@@ -14,9 +25,16 @@ class FitLogApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FitLog',
-      home: const MainShell(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'FitLog',
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          home: const MainShell(),
+        );
+      },
     );
   }
 }
