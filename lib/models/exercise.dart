@@ -1,43 +1,53 @@
 class Exercise {
-  final int? id;
-  final String name;
+  final int? exerciseId;
+  final String exerciseName;
   final String muscleGroup;
   final String equipment;
 
   Exercise({
-    this.id,
-    required this.name,
+    int? exerciseId,
+    int? id,
+    String? exerciseName,
+    String? name,
     required this.muscleGroup,
-    required this.equipment,
-  });
+    this.equipment = '',
+  })  : exerciseId = exerciseId ?? id,
+        exerciseName = (exerciseName ?? name ?? '').trim();
 
-  Map<String, Object?> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'muscle_group': muscleGroup,
-      'equipment': equipment,
-    };
-  }
+  int? get id => exerciseId;
+  String get name => exerciseName;
 
-  factory Exercise.fromMap(Map<String, Object?> map) {
+  factory Exercise.fromMap(dynamic value) {
+    if (value is Exercise) return value;
+    final map = value as Map<String, Object?>;
     return Exercise(
-      id: map['id'] as int?,
-      name: (map['name'] as String?) ?? '',
+      exerciseId: (map['exercise_id'] ?? map['id']) as int?,
+      exerciseName: ((map['exercise_name'] ?? map['name']) as String?) ?? '',
       muscleGroup: (map['muscle_group'] as String?) ?? '',
       equipment: (map['equipment'] as String?) ?? '',
     );
   }
 
+  Map<String, Object?> toMap() {
+    return {
+      if (exerciseId != null) 'exercise_id': exerciseId,
+      'exercise_name': exerciseName,
+      'muscle_group': muscleGroup,
+      'equipment': equipment,
+    };
+  }
+
   Exercise copyWith({
     int? id,
+    int? exerciseId,
     String? name,
+    String? exerciseName,
     String? muscleGroup,
     String? equipment,
   }) {
     return Exercise(
-      id: id ?? this.id,
-      name: name ?? this.name,
+      exerciseId: exerciseId ?? id ?? this.exerciseId,
+      exerciseName: exerciseName ?? name ?? this.exerciseName,
       muscleGroup: muscleGroup ?? this.muscleGroup,
       equipment: equipment ?? this.equipment,
     );
