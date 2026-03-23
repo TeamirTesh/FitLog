@@ -57,7 +57,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _openWorkout(Map<String, Object?> workout) async {
     final workoutId = workout['id'];
-    if (workoutId is! int) return;
+    if (workoutId is! int) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open workout details')),
+      );
+      return;
+    }
 
     final deleted = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -92,35 +97,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.history_toggle_off,
-                          size: 64,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'No workouts yet',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Your completed workouts will show up here.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.history_toggle_off,
+                            size: 64,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurfaceVariant,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          const Text(
+                            'No workouts yet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Your completed workouts will show up here.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 )

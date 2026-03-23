@@ -15,6 +15,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
   final DatabaseHelper _db = DatabaseHelper.instance;
 
   bool _loading = false;
+  bool _deleting = false;
   Map<String, Object?>? _workout;
   List<Map<String, Object?>> _exerciseRows = const [];
 
@@ -76,6 +77,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
 
     if (confirm != true) return;
 
+    setState(() => _deleting = true);
     try {
       await _db.deleteWorkout(widget.workoutId);
       if (!mounted) return;
@@ -85,6 +87,10 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to delete workout: $e')),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _deleting = false);
+      }
     }
   }
 
@@ -96,8 +102,14 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         actions: [
           IconButton(
             tooltip: 'Delete workout',
-            onPressed: _deleteWorkout,
-            icon: const Icon(Icons.delete_outline),
+            onPressed: _deleting ? null : _deleteWorkout,
+            icon: _deleting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.delete_outline),
           ),
         ],
       ),
@@ -107,9 +119,16 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Workout not found.',
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.search_off, size: 56),
+                        SizedBox(height: 12),
+                        Text(
+                          'Workout not found.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   ),
                 )
@@ -143,10 +162,25 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     if (_exerciseRows.isEmpty)
-                      const Card(
+                      Card(
                         child: Padding(
-                          padding: EdgeInsets.all(14),
-                          child: Text('No exercises logged for this workout.'),
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.playlist_remove,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  'No exercises logged for this workout.',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     else
