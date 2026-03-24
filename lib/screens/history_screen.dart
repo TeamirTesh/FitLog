@@ -140,6 +140,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     itemBuilder: (context, index) {
                       final workout = _workouts[index];
                       final date = (workout['date'] as String?) ?? '';
+                      final name =
+                          ((workout['name'] as String?) ?? '').trim();
+                      final title = name.isNotEmpty ? name : _formatDate(date);
                       final notes = ((workout['notes'] as String?) ?? '').trim();
                       final preview = notes.isEmpty ? 'No notes' : notes;
 
@@ -148,7 +151,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(14),
                           title: Text(
-                            _formatDate(date),
+                            title,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Padding(
@@ -156,7 +159,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Duration: ${_durationLabel(workout['duration'])}'),
+                                Text(
+                                  name.isNotEmpty
+                                      ? '${_formatDate(date)} · ${_durationLabel(workout['duration'])}'
+                                      : 'Duration: ${_durationLabel(workout['duration'])}',
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
                                   preview,

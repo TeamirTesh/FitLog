@@ -108,7 +108,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                   sliver: SliverList.separated(
                     itemCount: workouts.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) =>
                         _WorkoutCard(workout: workouts[index]),
                   ),
@@ -139,6 +140,9 @@ class _WorkoutCard extends StatelessWidget {
     final theme = Theme.of(context);
     final notes = workout.notes;
     final hasNotes = notes != null && notes.trim().isNotEmpty;
+    final title = workout.workoutName.trim().isNotEmpty
+        ? workout.workoutName.trim()
+        : workout.workoutDate;
 
     return Card(
       elevation: 1,
@@ -160,14 +164,16 @@ class _WorkoutCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    workout.workoutDate,
+                    title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${workout.duration} min',
+                    workout.workoutName.trim().isNotEmpty
+                        ? '${workout.workoutDate} · ${workout.duration} min'
+                        : '${workout.duration} min',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.primary,
                     ),
