@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/theme_provider.dart';
+import 'providers/workout_refresh_notifier.dart';
 import 'screens/home_screen.dart';
-import 'screens/start_workout_screen.dart';
+import 'screens/workout_landing_screen.dart';
 import 'screens/exercise_manager_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/settings_screen.dart';
@@ -13,8 +14,11 @@ Future<void> main() async {
   final themeProvider = ThemeProvider();
   await themeProvider.loadThemePreference();
   runApp(
-    ChangeNotifierProvider<ThemeProvider>.value(
-      value: themeProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
+        ChangeNotifierProvider(create: (_) => WorkoutRefreshNotifier()),
+      ],
       child: const FitLogApp(),
     ),
   );
@@ -51,7 +55,7 @@ class _MainShellState extends State<MainShell> {
 
   static const List<Widget> _screens = [
     HomeScreen(),
-    StartWorkoutScreen(),
+    WorkoutLandingScreen(),
     ExerciseManagerScreen(),
     HistoryScreen(),
     SettingsScreen(),

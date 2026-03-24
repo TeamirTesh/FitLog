@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../database/database_helper.dart';
 import '../models/workout.dart';
+import '../providers/workout_refresh_notifier.dart';
 import 'start_workout_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   late Future<List<Workout>> _recentWorkouts;
+  WorkoutRefreshNotifier? _workoutRefresh;
+  bool _refreshListenerAttached = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -20,6 +25,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   void initState() {
     super.initState();
     _loadWorkouts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_refreshListenerAttached) {
+      _refreshListenerAttached = true;
+      _workoutRefresh = context.read<WorkoutRefreshNotifier>();
+      _workoutRefresh!.addListener(_refresh);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_workoutRefresh != null) {
+      _workoutRefresh!.removeListener(_refresh);
+    }
+    super.dispose();
   }
 
   void _loadWorkouts() {
@@ -108,7 +131,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                   sliver: SliverList.separated(
                     itemCount: workouts.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) =>
                         _WorkoutCard(workout: workouts[index]),
                   ),
@@ -139,6 +163,9 @@ class _WorkoutCard extends StatelessWidget {
     final theme = Theme.of(context);
     final notes = workout.notes;
     final hasNotes = notes != null && notes.trim().isNotEmpty;
+    final title = workout.workoutName.trim().isNotEmpty
+        ? workout.workoutName.trim()
+        : workout.workoutDate;
 
     return Card(
       elevation: 1,
@@ -160,14 +187,16 @@ class _WorkoutCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    workout.workoutDate,
+                    title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${workout.duration} min',
+                    workout.workoutName.trim().isNotEmpty
+                        ? '${workout.workoutDate} · ${workout.duration} min'
+                        : '${workout.duration} min',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.primary,
                     ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../database/database_helper.dart';
+import '../providers/workout_refresh_notifier.dart';
 import 'workout_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -15,11 +17,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   bool _loading = false;
   List<Map<String, Object?>> _workouts = const [];
+  WorkoutRefreshNotifier? _workoutRefresh;
+  bool _refreshListenerAttached = false;
 
   @override
   void initState() {
     super.initState();
     _refreshWorkouts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_refreshListenerAttached) {
+      _refreshListenerAttached = true;
+      _workoutRefresh = context.read<WorkoutRefreshNotifier>();
+      _workoutRefresh!.addListener(_refreshWorkouts);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_workoutRefresh != null) {
+      _workoutRefresh!.removeListener(_refreshWorkouts);
+    }
+    super.dispose();
   }
 
   Future<void> _refreshWorkouts() async {
@@ -140,6 +162,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     itemBuilder: (context, index) {
                       final workout = _workouts[index];
                       final date = (workout['date'] as String?) ?? '';
+                      final name =
+                          ((workout['name'] as String?) ?? '').trim();
+                      final title = name.isNotEmpty ? name : _formatDate(date);
                       final notes = ((workout['notes'] as String?) ?? '').trim();
                       final preview = notes.isEmpty ? 'No notes' : notes;
 
@@ -148,7 +173,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(14),
                           title: Text(
-                            _formatDate(date),
+                            title,
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Padding(
@@ -156,7 +181,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Duration: ${_durationLabel(workout['duration'])}'),
+                                Text(
+                                  name.isNotEmpty
+                                      ? '${_formatDate(date)} · ${_durationLabel(workout['duration'])}'
+                                      : 'Duration: ${_durationLabel(workout['duration'])}',
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
                                   preview,
