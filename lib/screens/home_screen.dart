@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../database/database_helper.dart';
 import '../models/workout.dart';
+import '../providers/workout_refresh_notifier.dart';
 import 'start_workout_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   late Future<List<Workout>> _recentWorkouts;
+  WorkoutRefreshNotifier? _workoutRefresh;
+  bool _refreshListenerAttached = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -20,6 +25,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   void initState() {
     super.initState();
     _loadWorkouts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_refreshListenerAttached) {
+      _refreshListenerAttached = true;
+      _workoutRefresh = context.read<WorkoutRefreshNotifier>();
+      _workoutRefresh!.addListener(_refresh);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_workoutRefresh != null) {
+      _workoutRefresh!.removeListener(_refresh);
+    }
+    super.dispose();
   }
 
   void _loadWorkouts() {

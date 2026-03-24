@@ -14,14 +14,21 @@ class Workout {
     this.workoutName = '',
   });
 
-  factory Workout.fromMap(Map<String, dynamic> map) {
+  static int? _asInt(Object? v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
+
+  factory Workout.fromMap(Map<String, Object?> map) {
     final nameRaw = map['workout_name'] ?? map['name'];
     return Workout(
-      workoutId: (map['workout_id'] ?? map['id']) as int?,
+      workoutId: _asInt(map['workout_id'] ?? map['id']),
       workoutDate: ((map['workout_date'] ?? map['date']) as String?) ?? '',
-      duration: (map['duration'] as int?) ?? 0,
+      duration: _asInt(map['duration']) ?? 0,
       notes: map['notes'] as String?,
-      workoutName: (nameRaw as String?)?.trim() ?? '',
+      workoutName: (nameRaw is String ? nameRaw : nameRaw?.toString())?.trim() ?? '',
     );
   }
 

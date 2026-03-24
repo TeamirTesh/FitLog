@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../database/database_helper.dart';
+import '../providers/workout_refresh_notifier.dart';
 import 'workout_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -15,11 +17,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   bool _loading = false;
   List<Map<String, Object?>> _workouts = const [];
+  WorkoutRefreshNotifier? _workoutRefresh;
+  bool _refreshListenerAttached = false;
 
   @override
   void initState() {
     super.initState();
     _refreshWorkouts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_refreshListenerAttached) {
+      _refreshListenerAttached = true;
+      _workoutRefresh = context.read<WorkoutRefreshNotifier>();
+      _workoutRefresh!.addListener(_refreshWorkouts);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_workoutRefresh != null) {
+      _workoutRefresh!.removeListener(_refreshWorkouts);
+    }
+    super.dispose();
   }
 
   Future<void> _refreshWorkouts() async {

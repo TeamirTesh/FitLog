@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
 import '../database/database_helper.dart';
+import '../providers/workout_refresh_notifier.dart';
 import '../models/exercise.dart';
 import '../models/workout.dart';
 import '../models/workout_exercise.dart';
@@ -221,8 +224,10 @@ class _StartWorkoutScreenState extends State<StartWorkoutScreen> {
       }
 
       if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      context.read<WorkoutRefreshNotifier>().notifyWorkoutsChanged();
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Workout saved!'),
           behavior: SnackBarBehavior.floating,
